@@ -1,6 +1,6 @@
 
 const userModel = require("../models/user.model");
-const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 async function registerController(req, res) {
@@ -22,8 +22,11 @@ async function registerController(req, res) {
         })
     }
 
+    const hash = await bcrypt.hash(password, 10)
+    //here 10 means how many layers you want to hash your password it is called salt
+
     const user = await userModel.create({
-        username, email, password: crypto.createHash("sha256").update(password).digest("hex"), bio, profilePicture
+        username, email, password: hash, bio, profilePicture
     });
 
     const token = jwt.sign({
@@ -32,7 +35,7 @@ async function registerController(req, res) {
         process.env.JWT_SECRET, { expiresIn: "1d" }
     );
 
-    res.cookie("jwt_token", token);
+    res.cookie("token", token);
 
     res.status(201).json({
         message: "User registered successfully",
@@ -66,7 +69,7 @@ async function loginController(req, res) {
         })
     }
 
-    isPasswordCorrect = isUserExists.password === crypto.createHash("sha256").update(password).digest("hex");
+    isPasswordCorrect = await bcrypt.compare(password, isUserExists.password);
 
     if (!isPasswordCorrect) {
         return res.status(401).json({
@@ -80,7 +83,7 @@ async function loginController(req, res) {
         process.env.JWT_SECRET, { expiresIn: "1d" }
     )
 
-    res.cookie("jwt_token", token);
+    res.cookie("token", token);
 
     res.status(200).json({
         message: "login successfull",
