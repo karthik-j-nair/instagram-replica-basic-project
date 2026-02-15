@@ -69,7 +69,8 @@ async function loginController(req, res) {
         })
     }
 
-    isPasswordCorrect = await bcrypt.compare(password, isUserExists.password);
+    isPasswordCorrect = await bcrypt.compare(password, isUserExists.password); 
+    // it is necessary to stored password at second place and login password at first place
 
     if (!isPasswordCorrect) {
         return res.status(401).json({

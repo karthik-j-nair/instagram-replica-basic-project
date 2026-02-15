@@ -1,7 +1,6 @@
 const postModel = require("../models/post.model");
 const ImageKit = require("@imagekit/nodejs");
 const { toFile } = require("@imagekit/nodejs");
-const { Folders } = require("@imagekit/nodejs/resources/index.js");
 const jwt = require("jsonwebtoken");
 
 
@@ -20,8 +19,8 @@ async function createPostController(req, res) {
         })
     }
 
-    let decoded = null; 
-    
+    let decoded = null;
+
     try {
         decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (error) {
@@ -36,7 +35,7 @@ async function createPostController(req, res) {
         folder: "insta-replica-posts-image"
     })
 
-    
+
     const post = await postModel.create({
         caption: req.body.caption,
         imgUrl: file.url,
@@ -50,4 +49,87 @@ async function createPostController(req, res) {
     })
 }
 
-module.exports = { createPostController };
+async function getPostController(req, res) {
+
+    const token = req.cookies.token;
+
+    if (!token) {
+        return res.status(401).json({
+            message: "Unauthorized access"
+        })
+    }
+
+    let decoded = null;
+
+    try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+        return res.status(401).json({
+            message: "Invalid Token"
+        })
+    }
+
+    const userId = decoded.id;
+
+    const posts = await postModel.find({ user: userId });
+
+    if(!posts) {
+        return res.status(200).json({
+            messages: "No posts available"
+        })
+    }
+
+    res.status(200).json({
+        message: "Fetched all posts",
+        posts
+    })
+
+}
+
+async function getPostDetailController(req, res) {
+    
+    const token = req.cookies.token;
+
+    if(!token) {
+        return res.status(401).json({
+            message: "Unauthorized Access"
+        })
+    }
+
+    let decoded = null;
+
+    try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+        return res.status(401).json({
+            message: "Unauthorized Access"
+        })
+    }
+
+    const postId = req.params.postId;
+    const userId = decoded.id;
+
+    const post = await postModel.findById(postId);
+
+
+    if(!post) {
+        return res.status(404).json({
+            message: "Post not found"
+        })
+    }
+
+    const isValidUser = post.user.toString() === userId;
+
+    if(!isValidUser){
+        return res.status(403).json({
+            message: "Forbidden content"
+        })
+    }
+
+    res.status(200).json({
+        message: "Post fetched Successfully",
+        post
+    })
+}
+
+module.exports = { createPostController, getPostController, getPostDetailController };
