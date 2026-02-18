@@ -1,4 +1,6 @@
+const mongoose = require("mongoose");
 const postModel = require("../models/post.model");
+const likeModel = require("../models/like.model");
 const ImageKit = require("@imagekit/nodejs");
 const { toFile } = require("@imagekit/nodejs");
 
@@ -69,4 +71,49 @@ async function getPostDetailController(req, res) {
     })
 }
 
-module.exports = { createPostController, getPostController, getPostDetailController };
+async function likePostController(req, res) {
+    const postId = req.params.postId;
+    const username = req.userDets.username;
+
+    // Validate if postId is a valid MongoDB ObjectId and also require mongoose
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+        return res.status(400).json({
+            message: "Invalid post ID"
+        });
+    }
+
+    const isPostExists = await postModel.findById(postId);
+
+    if (!isPostExists) {
+        return res.status(404).json({
+            message: "Post not found"
+        });
+    }
+
+    const isAlreadyLiked = await likeModel.findOne({
+        post: postId,
+        user: username
+    });
+
+    if (isAlreadyLiked) {
+        return res.status(200).json({
+            message: "You already like the post"
+        });
+    }
+
+    const like = await likeModel.create({
+        post: postId, user: username
+    });
+
+    res.status(201).json({
+        message: "You liked the post"
+    });
+
+}
+
+module.exports = {
+    createPostController,
+    getPostController,
+    getPostDetailController,
+    likePostController
+};
