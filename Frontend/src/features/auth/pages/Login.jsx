@@ -10,7 +10,7 @@ const Login = () => {
 
   const navigate = useNavigate();
 
-  const { handleLogin, loading } = useAuth();
+  const { user, handleLogin, loading } = useAuth();
 
   if (loading) {
     return <h1>Loading...</h1>;
@@ -18,8 +18,8 @@ const Login = () => {
   async function submitHandler(e) {
     e.preventDefault();
 
-    handleLogin(username, password).then((res) => {
-      console.log(res);
+    await handleLogin(username, password).then((res) => {
+      // console.log(res);
       navigate("/");
     });
   }

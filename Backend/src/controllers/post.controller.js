@@ -111,9 +111,35 @@ async function likePostController(req, res) {
 
 }
 
+async function getFeedController(req, res) {
+
+    const user = req.userDets;
+    const posts = await Promise.all((await postModel.find().populate("user").lean()) 
+    // we add lean method to convert mongoose object to normal object to add like property (in mongoose object we cant add a property)
+    .map(async (post)=>{
+        
+        const isLiked = await likeModel.findOne({
+            user: user.username,
+            post: post._id
+        })
+
+        post.isLiked = !!isLiked // one ! means converting into false and second ! means converting into true
+
+        return post
+
+    }))
+    // populate injects the user details in place of userid which was stored while creating a post
+
+    res.status(200).json({
+        message: "Post fetched successfull",
+        posts
+    })
+}
+
 module.exports = {
     createPostController,
     getPostController,
     getPostDetailController,
-    likePostController
+    likePostController,
+    getFeedController
 };

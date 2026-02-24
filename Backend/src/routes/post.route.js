@@ -14,4 +14,12 @@ postRouter.get("/details/:postId", identifyUser, postController.getPostDetailCon
 
 postRouter.post("/like/:postId", identifyUser, postController.likePostController);
 
+/* 
+@routes GET api/posts/feed
+@desciption gets all the post available in the db
+@access only loggedin user
+*/
+
+postRouter.get("/feed", identifyUser, postController.getFeedController)
+
 module.exports = postRouter;

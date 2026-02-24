@@ -62,7 +62,7 @@ async function loginController(req, res) {
                 email: email
             }
         ]
-    })
+    }).select("+password"); // it forces to read the password which was not sent by default(select:false)
 
     if (!isUserExists) {
         return res.status(404).json({
@@ -70,7 +70,7 @@ async function loginController(req, res) {
         })
     }
 
-    isPasswordCorrect = await bcrypt.compare(password, isUserExists.password); 
+    isPasswordCorrect = await bcrypt.compare(password, isUserExists.password);
     // it is necessary to stored password at second place and login password at first place
 
     if (!isPasswordCorrect) {
@@ -104,7 +104,7 @@ async function getMeController(req, res) {
 
     const user = await userModel.findById(userId);
 
-    if(!user) {
+    if (!user) {
         return res.status(404).json({
             message: "User not found"
         });
@@ -121,8 +121,8 @@ async function getMeController(req, res) {
     });
 }
 
-module.exports = { 
-    registerController, 
+module.exports = {
+    registerController,
     loginController,
-    getMeController 
+    getMeController
 }

@@ -13,7 +13,8 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: [true, "password is required"]
+        required: [true, "password is required"],
+        select: false // while fetching data from frontend it doesn't send passward by defalult
     },
     bio: String,
     profilePicture: {
