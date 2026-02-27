@@ -14,6 +14,8 @@ postRouter.get("/details/:postId", identifyUser, postController.getPostDetailCon
 
 postRouter.post("/like/:postId", identifyUser, postController.likePostController);
 
+postRouter.post("/unlike/:postId", identifyUser, postController.unLikePostController)
+
 /* 
 @routes GET api/posts/feed
 @desciption gets all the post available in the db

@@ -1,6 +1,6 @@
 import React from "react";
 
-const Post = ({ user, post }) => {
+const Post = ({ user, post, handleLike, handleUnLike }) => {
   return (
     <div className="post">
       <div className="user">
@@ -12,7 +12,11 @@ const Post = ({ user, post }) => {
       <img src={post.imgUrl} alt="" />
       <div className="icons">
         <div className="left">
-          <button>
+          <button
+            onClick={() => {
+              post.isLiked ? handleUnLike(post._id) : handleLike(post._id);
+            }}
+          >
             {post.isLiked ? (
               <svg
                 className="is-liked"

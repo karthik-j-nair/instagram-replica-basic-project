@@ -111,23 +111,46 @@ async function likePostController(req, res) {
 
 }
 
+async function unLikePostController(req, res) {
+    const postId = req.params.postId
+    const username = req.userDets.username
+
+    const isLiked = await likeModel.findOne({
+        post: postId,
+        user: username
+    })
+
+    if (!isLiked) {
+        return res.status(400).json({
+            message: "Post not liked"
+        });
+    }
+
+    await likeModel.findOneAndDelete({ _id: isLiked._id });
+
+    return res.status(200).json({
+        message: "post unliked successfully."
+    });
+}
+
 async function getFeedController(req, res) {
 
     const user = req.userDets;
-    const posts = await Promise.all((await postModel.find().populate("user").lean()) 
-    // we add lean method to convert mongoose object to normal object to add like property (in mongoose object we cant add a property)
-    .map(async (post)=>{
-        
-        const isLiked = await likeModel.findOne({
-            user: user.username,
-            post: post._id
-        })
+    const posts = await Promise.all((await postModel.find().sort({ _id: -1 }).populate("user").lean())
+        // sort({ _id: -1 }) we use this to sort data according to the recent post that is recently created post will be showing on the top of the feed
+        // we add lean method to convert mongoose object to normal object to add like property (in mongoose object we cant add a property)
+        .map(async (post) => {
 
-        post.isLiked = !!isLiked // one ! means converting into false and second ! means converting into true
+            const isLiked = await likeModel.findOne({
+                user: user.username,
+                post: post._id
+            })
 
-        return post
+            post.isLiked = !!isLiked // one ! means converting into false and second ! means converting into true
 
-    }))
+            return post
+
+        }))
     // populate injects the user details in place of userid which was stored while creating a post
 
     res.status(200).json({
@@ -141,5 +164,6 @@ module.exports = {
     getPostController,
     getPostDetailController,
     likePostController,
+    unLikePostController,
     getFeedController
 };

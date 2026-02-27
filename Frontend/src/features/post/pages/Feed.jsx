@@ -2,10 +2,11 @@ import Post from "../components/Post";
 import "../styles/feed.scss";
 import { usePost } from "../hooks/usePost";
 import { useEffect } from "react";
+import Navbar from "../../Shared/Navbar";
 
 const Feed = () => {
 
-    const {handleGetFeed, loading, setLoading, feed} = usePost();
+    const {handleGetFeed, loading, setLoading, feed, handleLike, handleUnLike} = usePost();
 
     useEffect(()=>{
         handleGetFeed()
@@ -18,11 +19,11 @@ const Feed = () => {
     }
   return (
     <main className="feed-page">
+      <Navbar />
       <div className="feed">
         <div className="posts">
-          {/* <Post /> */}
           {feed.map((post, idx)=>{
-            return <Post key={idx} user={post.user} post={post}/>
+            return <Post key={idx} user={post.user} post={post} handleLike={handleLike} handleUnLike={handleUnLike}/>
           })}
         </div>
       </div>

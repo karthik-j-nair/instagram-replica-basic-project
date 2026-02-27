@@ -3,12 +3,15 @@ import AppRoutes from "./AppRoutes";
 import { AuthProvider } from "./features/auth/auth.context";
 import "./style.scss";
 import { PostContextProvider } from "./features/post/post.context";
+import { UserContextProvider } from "./features/friends/user.context.jsx";
 
 const App = () => {
   return (
     <AuthProvider>
       <PostContextProvider>
-        <AppRoutes />
+        <UserContextProvider>
+          <AppRoutes />
+        </UserContextProvider>
       </PostContextProvider>
     </AuthProvider>
   );

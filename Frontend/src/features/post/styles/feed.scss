@@ -1,7 +1,8 @@
 .feed-page {
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
 
   .feed {
     max-width: 350px;
@@ -11,7 +12,7 @@
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.2rem;
 
       .post {
         width: 100%;

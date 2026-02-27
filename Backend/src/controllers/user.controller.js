@@ -26,30 +26,10 @@ async function userFollowController(req, res) {
         followee: followeeUsername
     });
 
-    if (isFollowing) {
 
-        if (isFollowing.status === "pending") {
-            return res.status(200).json({
-                message: "Follow request already sent"
-            });
-
-        }
-        if (isFollowing.status === "accepted") {
-            return res.status(200).json({
-                message: `Already following ${followeeUsername}`
-            });
-        }
-
-        if (isFollowing.status === "rejected") {
-            return res.status(200).json({
-                message: "Your previous request was rejected"
-            });
-        }
-
-    }
 
     const follow = await followModel.create({
-        followee: followeeUsername, follower: followerUsername, status: "pending"
+        followee: followeeUsername, follower: followerUsername
     });
 
     res.status(201).json({
@@ -78,7 +58,6 @@ async function userUnfollowController(req, res) {
     const isFollowing = await followModel.findOne({
         followee: usernameOfFollowee,
         follower: usernameOfFollower,
-        status: "accepted"
     });
 
     if (!isFollowing) {
@@ -99,41 +78,85 @@ async function userUnfollowController(req, res) {
 
 }
 
-async function respondToFollowRequest(req, res) {
+// async function respondToFollowRequest(req, res) {
 
-    const followeeUsername = req.userDets.username;
-    const followerUsername = req.params.username;
-    const { action } = req.body;
+//     const followeeUsername = req.userDets.username;
+//     const followerUsername = req.params.username;
+//     const { action } = req.body;
 
-    if (!["accepted", "rejected"].includes(action)) {
-        return res.status(400).json({
-            message: "Invalid action"
-        });
-    }
+//     if (!["accepted", "rejected"].includes(action)) {
+//         return res.status(400).json({
+//             message: "Invalid action"
+//         });
+//     }
 
-    const followRequest = await followModel.findOne({
-        follower: followerUsername,
-        followee: followeeUsername,
-        status: "pending"
+//     const followRequest = await followModel.findOne({
+//         follower: followerUsername,
+//         followee: followeeUsername,
+//         status: "pending"
+//     });
+
+//     if (!followRequest) {
+//         return res.status(404).json({
+//             message: "No pending request found"
+//         });
+//     }
+
+//     followRequest.status = action;
+//     await followRequest.save();
+
+//     res.status(200).json({
+//         message: `Follow request ${action}`
+//     });
+// }
+
+
+async function fetchUserController(req, res) {
+    const userName = req.userDets.username;
+
+    const users = await userModel.find({
+        username: { $ne: userName }
     });
 
-    if (!followRequest) {
-        return res.status(404).json({
-            message: "No pending request found"
+    if (!users) {
+        return res.status(400).json({
+            message: "No users available"
         });
     }
-
-    followRequest.status = action;
-    await followRequest.save();
 
     res.status(200).json({
-        message: `Follow request ${action}`
+        message: "Users fetched successfully",
+        users
     });
+}
+
+async function fetchFollowerFolloweeController(req, res) {
+    const userName = req.userDets.username;
+
+    const myFollowers = await followModel
+        .find({ followee: userName })
+        .select("follower -_id");
+
+    const myFollowing = await followModel
+        .find({ follower: userName })
+        .select("followee -_id");
+
+    const followers = myFollowers.map(doc => doc.follower);
+    const followings = myFollowing.map(doc => doc.followee);
+
+    res.status(200).json({
+        message: "Fetch successfull",
+        followers,
+        followings
+    })
+    
+
 }
 
 
 module.exports = {
     userFollowController,
     userUnfollowController,
-    respondToFollowRequest
+    fetchUserController,
+    fetchFollowerFolloweeController
 }
